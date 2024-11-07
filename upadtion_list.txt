@@ -1,0 +1,5 @@
+1.personal dms 
+2.Discord like channel system
+3.on the left side of the app show the list of chats like different channel and personal dms
+4.login can be made form fire base or using just using local database like sql
+5.datbase to save chats hsitory 
