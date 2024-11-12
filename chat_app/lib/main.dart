@@ -181,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, dynamic>> _users = [];
   String _currentChat = 'global';
   StreamSubscription? _subscription;
-  bool _showUserList = false;
+  final bool _showUserList = false;
 
   @override
   void initState() {
