@@ -1,6 +1,7 @@
 import socket
 import threading
 import argparse
+import random
 import os
 
 class Server(threading.Thread):
@@ -28,17 +29,34 @@ class Server(threading.Thread):
             
             self.clients.append(server_socket)
             print(f'Ready to receive messages from {sc.getpeername()}')
+        
+    def send_join(self,sourcename):
+        for client in self.clients:
+            if client.name != sourcename:
+                client.send(f'{sourcename} has joined the chat #FFFFFF')
     
     def broadcast(self, message, source_name):
+        color = None
         for client in self.clients:
-            if client.name != source_name:
-                client.send(f'{source_name} says: {message}')
+            if client.name == source_name:
+                color = client.user_color
+                break
+
+        for client in self.clients:
+            # if client.name != source_name:
+            if message.lower() == 'exit':
+                client.send(f'{source_name} has left the chat #FFFFFF')
+            else:
+                client.send(f'{source_name} says: {message} {color}')
                 
     def remove_client(self, client):
         print(f'Removing client {client.name}')
         self.clients.remove(client)
 
 class ServerSocket(threading.Thread):
+
+    available_colors = {"#e57373", "#64b5f6", "#81c784", "#ffb74d", "#9575cd", "#f06292", "#4db6ac", "#ffd54f"}
+    user_colors = set()
     
     def __init__(self, sc, server):
         super().__init__()
@@ -46,16 +64,20 @@ class ServerSocket(threading.Thread):
         self.server = server
         self.name = None
         
+        self.user_color = random.choice(list(self.available_colors.difference(ServerSocket.user_colors)))
+        ServerSocket.user_colors.add(self.user_color)
+        
     def run(self):
         # First message received from client is the client's name
         self.name = self.sc.recv(1024).decode('ascii')
-        print(f'{self.name} has joined the chat.')
+        self.server.send_join(self.name)
         
         while True:
             message = self.sc.recv(1024).decode('ascii')
             if message:
                 print(f'{self.name} says: {message}')
                 self.server.broadcast(message, self.name)
+                
             else:
                 print(f'{self.name} has left the chat.')
                 self.sc.close()
